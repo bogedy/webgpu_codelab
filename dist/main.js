@@ -1,0 +1,1 @@
+(()=>{"use strict";const e=document.querySelector("canvas").getContext("2d");if(!navigator.gpu)throw new Error("WebGPU not supported on this browser.");console.log("WebGPU is supported!"),e.fillStyle="green",e.fillRect(10,10,150,100)})();
