@@ -24,6 +24,6 @@ module.exports = {
         extensions: [".ts"]
     },
 
-    mode: "development",
+    mode: "production",
     devtool: "source-map"
 };

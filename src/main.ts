@@ -114,7 +114,7 @@ const cellShaderModule = device.createShaderModule({
     @fragment
     fn fragmentMain(input: VertexOutput) -> @location(0) vec4f {
       let c = input.cell / grid;
-      return vec4f(c, 1 - c.x, 1);
+      return vec4f(1-c.x, c, .5);
 }
   `
 });
@@ -230,7 +230,7 @@ function updateGrid() {
       colorAttachments: [{
         view: context.getCurrentTexture().createView(),
         loadOp: "clear",
-        clearValue: { r: 0, g: 0, b: 0.4, a: 1.0 },
+        clearValue: { r: 0, g: 0.4, b: 0.4, a: 1.0 },
         storeOp: "store",
       }]
     });
