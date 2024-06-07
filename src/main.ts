@@ -1,6 +1,6 @@
 
 // test that we're reading right
-document.body.insertAdjacentHTML('afterbegin', '<p>The script is being read correctly.</p>');
+//document.body.insertAdjacentHTML('afterbegin', '<p>The script is being read correctly.</p>');
 
 const GRID_SIZE = 32;
 
