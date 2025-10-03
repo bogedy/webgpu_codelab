@@ -2,7 +2,8 @@
 // test that we're reading right
 //document.body.insertAdjacentHTML('afterbegin', '<p>The script is being read correctly.</p>');
 
-const GRID_SIZE = 32;
+var GRID_SIZE = 256;
+const UPDATE_INTERVAL = 200; // Update every 200ms (5 times/sec)
 
 const canvas = document.querySelector("canvas")!;
 // Your WebGPU code will begin here!
@@ -204,7 +205,6 @@ context.configure({
   format: canvasFormat,
 });
 
-const UPDATE_INTERVAL = 200; // Update every 200ms (5 times/sec)
 let step = 0; // Track how many simulation steps have been run
 
 /* I suppose that everything in here happens fast enough
@@ -308,6 +308,20 @@ const simulationPipeline = device.createComputePipeline({
   }
 });
 
-setInterval(updateGrid, UPDATE_INTERVAL);
+var gridInterval = setInterval(updateGrid, UPDATE_INTERVAL);
+const speedSlider = document.getElementById('speedSlider')!;
+
+speedSlider.addEventListener('input', function(event) {
+  const sliderElement = event.target as HTMLInputElement
+  console.log(sliderElement.value);
+  const sliderValue = parseInt(sliderElement.value, 10)  
+  if (gridInterval) {
+    clearInterval(gridInterval);
+  }
+  
+  // Set new interval
+  gridInterval = setInterval(updateGrid, sliderValue);
+});
+
 
 export { };
