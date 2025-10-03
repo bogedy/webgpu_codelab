@@ -2,7 +2,7 @@
 // test that we're reading right
 //document.body.insertAdjacentHTML('afterbegin', '<p>The script is being read correctly.</p>');
 
-var GRID_SIZE = 256;
+var GRID_SIZE = 32;
 const UPDATE_INTERVAL = 200; // Update every 200ms (5 times/sec)
 
 const canvas = document.querySelector("canvas")!;
@@ -34,6 +34,7 @@ let bindGroups: GPUBindGroup[];
 let cellPipeline: GPURenderPipeline;
 let pipelineLayout: GPUPipelineLayout;
 let simulationPipeline: GPUComputePipeline;
+let cellShaderModule: GPUShaderModule;
 let simulationShaderModule: GPUShaderModule;
 let WORKGROUP_SIZE: number;
 
@@ -67,8 +68,8 @@ const vertexBufferLayout: GPUVertexBufferLayout = {
 };
 
 function initializeResources() {
-  const cellStateArray = new Uint32Array(GRID_SIZE * GRID_SIZE);
-  const cellStateStorage = [
+  cellStateArray = new Uint32Array(GRID_SIZE * GRID_SIZE);
+  cellStateStorage = [
     device.createBuffer({
       label: "Cell State A",
       size: cellStateArray.byteLength,
@@ -91,7 +92,7 @@ function initializeResources() {
   /*
   Note: As the above code snippet shows, once you call writeBuffer(), you don't have to preserve the contents of the source TypedArray any more. At that point, the contents have been copied and the GPU buffer is guaranteed to receive the data as it was at the time the call is made. This allows you to reuse the JavaScript object for the next upload, which saves on memory!
   */
-  const cellShaderModule = device.createShaderModule({
+  cellShaderModule = device.createShaderModule({
     label: "Cell shader",
     code: `
 
@@ -198,7 +199,8 @@ function initializeResources() {
     ],}), // immutable, but you can mutate the data in the uniformArray
     device.createBindGroup({
       label: "Cell renderer bind group B",
-      layout: cellPipeline.getBindGroupLayout(0),
+      // layout: cellPipeline.getBindGroupLayout(0),
+      layout: bindGroupLayout,
     entries: [{
       binding: 0,
       resource: { buffer: uniformBuffer }
@@ -324,17 +326,40 @@ function updateGrid() {
   }
 
 var gridInterval = setInterval(updateGrid, UPDATE_INTERVAL);
-const speedSlider = document.getElementById('speedSlider')!;
+const speedSlider = document.getElementById('speedSlider')! as HTMLInputElement;
+document.getElementById('speedValue')!.textContent = speedSlider.value;
+
+const sizeSlider = document.getElementById('sizeSlider')! as HTMLInputElement;
+document.getElementById('sizeValue')!.textContent = sizeSlider.value;
+
+// Set initial interval based on transformed slider value (higher slider = faster/shorter interval)
+const initialDelay = 1001 - parseInt(speedSlider.value, 10);
+// var gridInterval = setInterval(updateGrid, initialDelay);
 
 speedSlider.addEventListener('input', function(event) {
-  const sliderElement = event.target as HTMLInputElement
-  const sliderValue = parseInt(sliderElement.value, 10)  
+  const sliderElement = event.target as HTMLInputElement;
+  const sliderValue = parseInt(sliderElement.value, 10);
+  document.getElementById('speedValue')!.textContent = sliderValue.toString();
+  
   if (gridInterval) {
     clearInterval(gridInterval);
   }
   
-  // Set new interval
-  gridInterval = setInterval(updateGrid, sliderValue);
+  // Transform: lower slider = slower (longer interval), higher = faster (shorter)
+  const interval = 1001 - sliderValue;
+  gridInterval = setInterval(updateGrid, interval);
+});
+
+// Add input listener for size slider to update display (no simulation change on input, only on button)
+sizeSlider.addEventListener('input', function() {
+  document.getElementById('sizeValue')!.textContent = this.value;
+});
+
+const reset = document.getElementById('restartBtn')!;
+reset.addEventListener('click', () => {
+  step = 0;
+  GRID_SIZE = parseInt(sizeSlider.value);
+  initializeResources();
 });
 
 
